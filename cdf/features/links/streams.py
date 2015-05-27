@@ -380,6 +380,14 @@ class OutlinksStreamDef(OutlinksRawStreamDef):
                 FIELD_RIGHTS.SELECT,
                 URL_ID,
                 DIFF_QUALITATIVE
+            },
+            "csv": {
+                "fields": {
+                    "http_code": "Redirects To HTTP Code",
+                    "url": "Redirects To URL"
+                },
+                "strategy": (lambda (redirect_to_url): {'http_code': redirect_to_url.get('http_code', None),
+                                                        'url': redirect_to_url.get('url', None)})
             }
         },
         "redirect.to.url_exists": {
@@ -410,6 +418,14 @@ class OutlinksStreamDef(OutlinksRawStreamDef):
                 FIELD_RIGHTS.FILTERS_EXIST,
                 FIELD_RIGHTS.SELECT,
                 URL_ID
+            },
+            "csv": {
+                "fields": {
+                    "http_code": "Redirected From HTTP Code",
+                    "url": "Redirect From URL"
+                },
+                "strategy": (lambda (redirect_from_url): {'http_code': redirect_from_url[0],
+                                                          'url': redirect_from_url[1]})
             }
         },
         "redirect.from.urls_exists": {

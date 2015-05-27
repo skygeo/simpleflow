@@ -1,7 +1,11 @@
 import copy
 
+from cdf.core.metadata.dataformat import assemble_data_format
+from cdf.metadata.url.url_metadata import ES_LIST
+from cdf.exceptions import InvalidCSVQueryException
 from cdf.metadata.url.es_backend_utils import ElasticSearchBackend
 from cdf.query.query_parsing import QueryParser
+from cdf.query.csv_result_transformer import transform_csv_result
 from cdf.query.result_transformer import transform_result, transform_aggregation_result
 from cdf.utils.dict import deep_dict
 from cdf.core.metadata.dataformat import generate_data_format
@@ -183,6 +187,12 @@ class Query(object):
         return self.parser.get_es_query(self.botify_query, self.crawl_id)
 
     def _run(self):
+        """Translates the query and calls `_run_query` to execute it"""
+        if self.executed:
+            return
+        self._run_query(self.es_query)
+
+    def _run_query(self, es_query):
         """Launch the process of a ES query
             - Translation of a botify format query to ES search API
             - Query execution
@@ -213,11 +223,6 @@ class Query(object):
             }
         ]
         """
-        if self.executed:
-            return
-
-        # Translation
-        es_query = self.es_query
 
         # Issue a ES search
         temp_results = self.es_handler.search(
@@ -262,3 +267,44 @@ class Query(object):
 
         # Flip flag on execution success
         self.executed = True
+
+
+class CSVQuery(Query):
+    """
+    Query with CSV-ready results
+    Specific CSV validation (1 multiple field max., 10 fields max), and validation
+    (multiple field values flattened to multiple rows with 1 value per row, verbose names in column headers)
+    """
+
+    def _validate(self, es_query):
+        """
+        Validate the CSV query
+        CSV queries can have 10 fields at most and only 1 "multiple field"
+        """
+        self.fields = es_query['_source']
+        if len(self.fields) > 10:
+            raise InvalidCSVQueryException('More than 10 fields requested')
+
+        self.data_format = assemble_data_format()
+
+        multiple_fields = [field for field in self.fields if ES_LIST in self.data_format[field]['settings']]
+
+        if len(multiple_fields) > 1:
+            raise InvalidCSVQueryException('More than 1 multiple field requested')
+        if multiple_fields != []:
+            self.multiple_field = multiple_fields[0]
+        else:
+            self.multiple_field = None
+
+    def _run(self):
+        """
+        Do specific CSV validation, run the Query and do CSV specific transformation
+        """
+        if self.executed:
+            return
+        es_query = self.es_query
+        self._validate(es_query)
+
+        self._run_query(es_query)
+        # Apply CSV-specific transformers
+        transform_csv_result(self._results, self)
