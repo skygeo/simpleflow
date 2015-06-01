@@ -148,7 +148,9 @@ class Query(object):
         self._results = []
         self._aggs = []
         self.executed = False
+        self.validated = False
         self.backend = backend
+        self._es_query = None
 
         if es_handler is None:
             self.es_handler = EsHandler(
@@ -184,15 +186,21 @@ class Query(object):
 
     @property
     def es_query(self):
-        return self.parser.get_es_query(self.botify_query, self.crawl_id)
+        if not self._es_query:
+            self._es_query = self.parser.get_es_query(self.botify_query, self.crawl_id)
+        return self._es_query
+
+    def validate(self):
+        self.validated = True
+        return True
 
     def _run(self):
         """Translates the query and calls `_run_query` to execute it"""
         if self.executed:
             return
-        self._run_query(self.es_query)
+        self._run_query()
 
-    def _run_query(self, es_query):
+    def _run_query(self):
         """Launch the process of a ES query
             - Translation of a botify format query to ES search API
             - Query execution
@@ -226,7 +234,7 @@ class Query(object):
 
         # Issue a ES search
         temp_results = self.es_handler.search(
-            body=es_query,
+            body=self.es_query,
             routing=self.crawl_id,
             size=self.limit,
             start=self.start,
@@ -241,7 +249,7 @@ class Query(object):
             return
 
         self._results = []
-        self.fields = es_query['_source']
+        self.fields = self.es_query['_source']
 
         # make a copy of the fields part
         # need to use `deep_dict` since ES gives a dict with flatten path
@@ -276,12 +284,12 @@ class CSVQuery(Query):
     (multiple field values flattened to multiple rows with 1 value per row, verbose names in column headers)
     """
 
-    def _validate(self, es_query):
+    def validate(self):
         """
         Validate the CSV query
         CSV queries can have 10 fields at most and only 1 "multiple field"
         """
-        self.fields = es_query['_source']
+        self.fields = self.es_query['_source']
         if len(self.fields) > 10:
             raise InvalidCSVQueryException('More than 10 fields requested')
 
@@ -295,6 +303,7 @@ class CSVQuery(Query):
             self.multiple_field = multiple_fields[0]
         else:
             self.multiple_field = None
+        self.validated = True
 
     def _run(self):
         """
@@ -302,9 +311,10 @@ class CSVQuery(Query):
         """
         if self.executed:
             return
-        es_query = self.es_query
-        self._validate(es_query)
 
-        self._run_query(es_query)
+        if not self.validated:
+            self._validate()
+
+        self._run_query()
         # Apply CSV-specific transformers
         transform_csv_result(self._results, self)
