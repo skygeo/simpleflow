@@ -133,6 +133,8 @@ def compute_final_redirects(stream_infos, stream_links):
                 r.uid_to_http_code[uid] = int(http_code)
         else:
             uid, http_code = line
+            if uid not in dsts:
+                continue
             # 200 is the default, and redirects can't be in the result
             if http_code not in (200, 301, 302, 307, 308):
                 r.uid_to_http_code[uid] = http_code
