@@ -4,7 +4,6 @@ import mock
 from cdf.core.features import Feature
 from cdf.core.metadata.dataformat import assemble_data_format
 from cdf.core.streams.base import StreamDefBase
-from cdf.metadata.url.url_metadata import ES_LIST
 from cdf.query.csv_result_transformer import (FlatNamesNormalizer, MultipleFieldsNormalizer,
                                               VerboseNamesCustomFieldsNormalizer)
 
@@ -42,8 +41,8 @@ class CustomStreamDef(StreamDefBase):
                     "http_code": "Multiple Field HTTP Code",
                     "url": "Multiple Field URL"
                 },
-                "strategy": (lambda (multiple_field): {'http_code': multiple_field[0],
-                                                       'url': multiple_field[1]})
+                "strategy": lambda multiple_field: {'http_code': multiple_field[0],
+                                                    'url': multiple_field[1]}
             }
         },
         "multiple_custom.field": {

@@ -29,7 +29,7 @@ class FlatNamesNormalizer(ResultTransformer):
         for (key, value) in columns.iteritems():
             key_is_custom_field = self._key_is_custom_field(key)
 
-            if not key_is_custom_field and type(value) == dict:
+            if not key_is_custom_field and isinstance(value, dict):
                 new_columns.update(self._flatten_column({key + '.' + new_key: value[new_key]
                                    for new_key in value.keys()}))
             else:
