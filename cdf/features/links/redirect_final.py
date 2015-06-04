@@ -98,17 +98,9 @@ def compute_final_redirects(stream_infos, stream_links):
     logger.info('Reading links')
 
     for line in stream_links:
-        if 1:
-            if line[1][0] != 'r':
-                continue
-            uid, link_type, mask, dst, ext_url = line
-        else:
-            # uid, link_type, mask, dst, ext_url
-            p = line.find('\t') + 1
-            if line[p] != 'r':
-                continue
-            uid, link_type, mask, dst, ext_url = line.split('\t')
-            uid, dst = int(uid), int(dst)
+        if line[1][0] != 'r':
+            continue
+        uid, link_type, mask, dst, ext_url = line
         r.uid_to_dst[uid] = dst
         if dst != -1:
             dsts.add(dst)
@@ -120,24 +112,12 @@ def compute_final_redirects(stream_infos, stream_links):
 
     # http_code_idx = InfosStreamDef.field_idx('http_code')
     for line in stream_infos:
-        if 0:
-            # id, ..., http_code, ...
-            p = line.find('\t')
-            uid = int(line[:p])
-            if uid not in dsts:
-                continue
-            line = line.split('\t')
-            http_code = line[http_code_idx]
-            # 200 is the default, and redirects can't be in the result
-            if http_code not in ('200', '301', '302', '307', '308'):
-                r.uid_to_http_code[uid] = int(http_code)
-        else:
-            uid, http_code = line
-            if uid not in dsts:
-                continue
-            # 200 is the default, and redirects can't be in the result
-            if http_code not in (200, 301, 302, 307, 308):
-                r.uid_to_http_code[uid] = http_code
+        uid, http_code = line
+        if uid not in dsts:
+            continue
+        # 200 is the default, and redirects can't be in the result
+        if http_code not in (200, 301, 302, 307, 308):
+            r.uid_to_http_code[uid] = http_code
 
     logger.info('Read %d http codes', len(r.uid_to_http_code))
 
