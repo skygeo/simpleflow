@@ -92,7 +92,7 @@ class TestExtractFields(unittest.TestCase):
         g = get_groups(features_options)
         self.assertEqual(1, len(g))
 
-    def test_with_previous(self):
+    def test_no_previous_no_diff(self):
         features_options = {
             "extract": [
                 {
@@ -122,21 +122,7 @@ class TestExtractFields(unittest.TestCase):
         self.assertEquals(product_prices_field["name"], "Product Prices")
         self.assertEquals(product_prices_field["group"], "extract")
 
-        product_prices_field = filter(lambda f: f["value"].endswith("extract_i_0"), fields)[1]
-        self.assertTrue(product_prices_field["multiple"])
-        self.assertEquals(product_prices_field["name"], "Previous Product Prices")
-        self.assertEquals(product_prices_field["group"], "previous.extract")
-
-        product_prices_field = filter(lambda f: f["value"].endswith("extract_i_0"), fields)[2]
-        self.assertTrue(product_prices_field["multiple"])
-        self.assertEquals(product_prices_field["name"], "Diff Product Prices")
-        self.assertEquals(product_prices_field["group"], "diff.extract")
-
-        # Test enabled fields
-        # As we generate 5 fields for each type (i, f, s, b) we hide all
-        # fields that are not reserved
-        filters = [f["value"] for f in filter(lambda f: f["value"].startswith("extract."), fields)]
-        self.assertEquals(filters, ["extract.extract_i_0"])
+        self.assertEqual(1, len(fields))
 
 
 class ParsingTestCase(unittest.TestCase):
