@@ -6,7 +6,7 @@ from cdf.metadata.url.url_metadata import (
     INT_TYPE, STRING_TYPE, BOOLEAN_TYPE, FLOAT_TYPE,
     ES_NOT_ANALYZED, ES_DOC_VALUE,
     AGG_NUMERICAL, AGG_CATEGORICAL,
-    DIFF_QUANTITATIVE, DIFF_QUALITATIVE
+    NO_PREVIOUS
 )
 from cdf.core.streams.base import StreamDefBase
 
@@ -78,22 +78,20 @@ def _generate_ers_document_mapping():
                 ES_DOC_VALUE,
                 FIELD_RIGHTS.FILTERS,
                 FIELD_RIGHTS.SELECT,
+                NO_PREVIOUS
             }
             if short_type_name in ('i', 'f'):
                 settings |= {
                     AGG_NUMERICAL,
-                    DIFF_QUANTITATIVE,
                 }
             elif short_type_name == 's':
                 settings |= {
                     ES_NOT_ANALYZED,
                     AGG_CATEGORICAL,
-                    DIFF_QUALITATIVE,
                 }
             elif short_type_name == 'b':
                 settings |= {
                     AGG_CATEGORICAL,
-                    DIFF_QUALITATIVE,
                 }
             dm["extract.extract_%s_%i" % (short_type_name, i)] = {
                 "type": type_name,

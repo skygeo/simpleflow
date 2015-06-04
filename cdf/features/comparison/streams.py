@@ -1,10 +1,11 @@
 import copy
 
-from cdf.core.metadata.constants import FIELD_RIGHTS, RENDERING
+from cdf.core.metadata.constants import FIELD_RIGHTS
 from cdf.metadata.url.url_metadata import (
     BOOLEAN_TYPE,  STRING_TYPE,
     DIFF_QUANTITATIVE, DIFF_QUALITATIVE,
-    ES_DOC_VALUE, ES_NOT_ANALYZED
+    ES_NOT_ANALYZED,
+    NO_PREVIOUS
 )
 
 
@@ -119,7 +120,7 @@ def get_previous_data_format(data_format, extras=EXTRA_FIELDS_FORMAT):
     """
     previous_format = {
         _transform_comparison_field(k): _transform_comparison_config(v)
-        for k, v in data_format.iteritems()
+        for k, v in data_format.iteritems() if NO_PREVIOUS not in v.get('settings', set())
     }
     previous_format.update(extras)
 

@@ -78,3 +78,4 @@ FAKE_FIELD = 'es:fake'
 # Comparison/Diff related
 DIFF_QUALITATIVE = 'diff:qualitative'
 DIFF_QUANTITATIVE = 'diff:quantitative'
+NO_PREVIOUS = 'previous:no'
