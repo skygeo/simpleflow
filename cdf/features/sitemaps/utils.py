@@ -1,14 +1,19 @@
-import requests
+import sys
 import logging
-from retrying import retry, RetryError
+
+import requests
+from retrying import retry
 
 from cdf.log import logger
 from cdf.features.sitemaps.exceptions import DownloadError
+
 
 #change request logger log level
 requests_log = logging.getLogger("requests")
 requests_log.setLevel(logging.WARNING)
 
+# No SNI support and other limitations
+BOGUS_SSL = (sys.hexversion < 0x2070900)
 
 #retry with exponential backoff.
 #FIXME this reponsibility should be delegated to the workflow.
@@ -35,7 +40,7 @@ def download_url(url, output_file_path, user_agent=None):
     else:
         headers = None
 
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, verify=not BOGUS_SSL)
     if response.status_code == 200:
         with open(output_file_path, 'wb') as output_file:
             for chunk in response.iter_content():
