@@ -104,7 +104,7 @@ def optional_pypy_activity(func, task_name, feature):
 
 from cdf.features.main.tasks import compute_suggested_patterns
 compute_suggested_patterns = optional_activity(
-    compute_suggested_patterns, 'segment', 'suggested_patterns')
+    compute_suggested_patterns, 'segment', 'main')
 
 from cdf.features.main.tasks import compute_zones, compute_compliant_urls
 # cannot pass to pypy because exceptions imported from `autotagging` in main's tasks
