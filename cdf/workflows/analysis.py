@@ -104,7 +104,7 @@ def optional_pypy_activity(func, task_name, feature):
 
 from cdf.features.main.tasks import compute_suggested_patterns
 compute_suggested_patterns = optional_activity(
-    compute_suggested_patterns, 'segment', 'main')
+    compute_suggested_patterns, 'segment', 'suggested_patterns')
 
 from cdf.features.main.tasks import compute_zones, compute_compliant_urls
 # cannot pass to pypy because exceptions imported from `autotagging` in main's tasks
@@ -146,13 +146,13 @@ make_top_domains_files = optional_activity(
     'links',
 )
 make_inlinks_percentiles_file = as_pypy_activity(make_inlinks_percentiles_file)
-compute_page_rank = optional_pypy_activity(page_rank, 'document', 'links')
+compute_page_rank = optional_pypy_activity(page_rank, 'links', 'page_rank')
 make_links_to_non_canonical_file = optional_pypy_activity(make_links_to_non_canonical_file,
-                                                          'document', 'links')
+                                                          'links', 'links_to_non_canonical')
 make_links_to_non_canonical_counter_file = optional_pypy_activity(
     make_links_to_non_canonical_counter_file,
-    'document', 'links')
-get_final_redirects = optional_pypy_activity(get_final_redirects, 'document', 'links')
+    'links', 'links_to_non_canonical_file_counter')
+get_final_redirects = optional_pypy_activity(get_final_redirects, 'links', 'chains')
 
 from cdf.tasks.url_data import (
     generate_documents,
@@ -165,18 +165,18 @@ from cdf.features.ganalytics.tasks import (
     match_analytics_to_crawl_urls
 )
 import_data_from_ganalytics = optional_activity(
-    import_data_from_ganalytics, 'document', 'ganalytics')
+    import_data_from_ganalytics, 'ganalytics', 'import')
 match_analytics_to_crawl_urls = optional_activity(
-    match_analytics_to_crawl_urls, 'document', 'ganalytics')
+    match_analytics_to_crawl_urls, 'ganalytics', 'match')
 
 from cdf.features.sitemaps.tasks import (
     download_sitemap_files,
     match_sitemap_urls,
 )
 download_sitemap_files = optional_activity(
-    download_sitemap_files, 'document', 'sitemaps')
+    download_sitemap_files, 'sitemaps', 'download')
 match_sitemap_urls = optional_activity(
-    match_sitemap_urls, 'document', 'sitemaps')
+    match_sitemap_urls, 'sitemaps', 'match')
 
 from cdf.features.rel.tasks import (
     convert_rel_out_to_rel_compliant_out
@@ -191,7 +191,7 @@ match_documents = as_activity(match_documents)
 
 from cdf.features.duplicate_query_kvs.tasks import task_get_urls_with_same_kv
 task_get_urls_with_same_kv = optional_pypy_activity(task_get_urls_with_same_kv,
-                                                    'document', 'duplicate_query_kvs')
+                                                    'duplicate_query_kvs', 'duplicate_query_kvs')
 
 from cdf.utils.es import refresh_index
 refresh_index = as_activity(refresh_index)
