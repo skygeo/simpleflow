@@ -146,13 +146,13 @@ make_top_domains_files = optional_activity(
     'links',
 )
 make_inlinks_percentiles_file = as_pypy_activity(make_inlinks_percentiles_file)
-compute_page_rank = optional_pypy_activity(page_rank, 'links', 'page_rank')
+compute_page_rank = optional_pypy_activity(page_rank, 'page_rank', 'links')
 make_links_to_non_canonical_file = optional_pypy_activity(make_links_to_non_canonical_file,
-                                                          'links', 'links_to_non_canonical')
+                                                          'links_to_non_canonical', 'links')
 make_links_to_non_canonical_counter_file = optional_pypy_activity(
     make_links_to_non_canonical_counter_file,
-    'links', 'links_to_non_canonical_file_counter')
-get_final_redirects = optional_pypy_activity(get_final_redirects, 'links', 'chains')
+    'links_to_non_canonical', 'links')
+get_final_redirects = optional_pypy_activity(get_final_redirects, 'chains', 'links')
 
 from cdf.tasks.url_data import (
     generate_documents,
@@ -165,18 +165,18 @@ from cdf.features.ganalytics.tasks import (
     match_analytics_to_crawl_urls
 )
 import_data_from_ganalytics = optional_activity(
-    import_data_from_ganalytics, 'ganalytics', 'import')
+    import_data_from_ganalytics, 'document', 'ganalytics')
 match_analytics_to_crawl_urls = optional_activity(
-    match_analytics_to_crawl_urls, 'ganalytics', 'match')
+    match_analytics_to_crawl_urls, 'document', 'ganalytics')
 
 from cdf.features.sitemaps.tasks import (
     download_sitemap_files,
     match_sitemap_urls,
 )
 download_sitemap_files = optional_activity(
-    download_sitemap_files, 'sitemaps', 'download')
+    download_sitemap_files, 'document', 'sitemaps')
 match_sitemap_urls = optional_activity(
-    match_sitemap_urls, 'sitemaps', 'match')
+    match_sitemap_urls, 'document', 'sitemaps')
 
 from cdf.features.rel.tasks import (
     convert_rel_out_to_rel_compliant_out
@@ -191,7 +191,7 @@ match_documents = as_activity(match_documents)
 
 from cdf.features.duplicate_query_kvs.tasks import task_get_urls_with_same_kv
 task_get_urls_with_same_kv = optional_pypy_activity(task_get_urls_with_same_kv,
-                                                    'duplicate_query_kvs', 'duplicate_query_kvs')
+                                                    'document', 'duplicate_query_kvs')
 
 from cdf.utils.es import refresh_index
 refresh_index = as_activity(refresh_index)
