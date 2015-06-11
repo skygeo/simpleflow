@@ -122,9 +122,10 @@ def compute_final_redirects(stream_infos, stream_links):
     logger.info('Read %d http codes', len(r.uid_to_http_code))
 
     for hop in r.uid_to_dst.keys():
-        nb_hops = r.uid_nb_hops.get(hop, 0)
-        if nb_hops > 0:
+        if hop in r.uid_nb_hops:
             continue  # already computed
+        nb_hops = 0
+        nb_hops_adjust = 0
         hops_seen = [hop]
         hops_seen_set = {hop}
         in_loop = False
@@ -145,6 +146,10 @@ def compute_final_redirects(stream_infos, stream_links):
             hop = next_hop
             if hop in hops_seen_set:
                 in_loop = True
+                if nb_hops == 0:
+                    # special case: must be counted, but the real nb_hops is 0
+                    nb_hops = 1
+                    nb_hops_adjust = -1
                 break
             hops_seen.append(hop)
             hops_seen_set.add(hop)
@@ -153,12 +158,12 @@ def compute_final_redirects(stream_infos, stream_links):
                 in_loop = True
                 break
         last_hop = hops_seen[-1]
-        for i in range(nb_hops):
+        for i in xrange(nb_hops):
             hop = hops_seen[i]
             r.uid_to_dst[hop] = last_hop
             if last_hop == -1:
                 r.uid_to_ext[hop] = last_hop_url
-            r.uid_nb_hops[hop] = nb_hops - i
+            r.uid_nb_hops[hop] = nb_hops - i + nb_hops_adjust
             if in_loop:
                 r.uid_in_loop.add(hop)
 

@@ -396,10 +396,30 @@ class TestRedirectFinal(unittest.TestCase):
             r = results.next()
             self.assertIsInstance(r, RedirectFinal)
             self.assertEqual(r.uid, 1)
+            self.assertEqual(r.nb_hops, 1)
             self.assertTrue(r.in_loop)
             r = results.next()
             self.assertIsInstance(r, RedirectFinal)
             self.assertEqual(r.uid, 2)
+            self.assertEqual(r.nb_hops, 1)
             self.assertTrue(r.in_loop)
+            with self.assertRaises(StopIteration):
+                results.next()
+
+    def test_links_loop_one(self):
+        infos = [
+            "1\t\t\t\t\t301\t\n",
+        ]
+        s = [
+            "1\tr301\t0\t1\t\n",
+        ]
+        infos, s = _cnv(infos, s)
+        with compute_final_redirects(infos, s) as results:
+            results = iter(results)
+            r = results.next()
+            self.assertIsInstance(r, RedirectFinal)
+            self.assertEqual(r.uid, 1)
+            self.assertTrue(r.in_loop)
+            self.assertEqual(r.nb_hops, 0)
             with self.assertRaises(StopIteration):
                 results.next()
