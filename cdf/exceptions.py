@@ -47,3 +47,11 @@ class HostDoesNotExist(Exception):
 
 class InvalidCSVQueryException(Exception):
     pass
+
+
+class InvalidCSVQueryExceptionTooManyFields(InvalidCSVQueryException):
+    pass
+
+
+class InvalidCSVQueryExceptionTooManyMultiples(InvalidCSVQueryException):
+    pass

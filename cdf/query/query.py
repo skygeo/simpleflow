@@ -2,7 +2,7 @@ import copy
 
 from cdf.core.metadata.dataformat import assemble_data_format
 from cdf.metadata.url.url_metadata import ES_LIST
-from cdf.exceptions import InvalidCSVQueryException
+from cdf.exceptions import InvalidCSVQueryExceptionTooManyFields, InvalidCSVQueryExceptionTooManyMultiples
 from cdf.metadata.url.es_backend_utils import ElasticSearchBackend
 from cdf.query.query_parsing import QueryParser
 from cdf.query.csv_result_transformer import transform_csv_result
@@ -291,14 +291,14 @@ class CSVQuery(Query):
         """
         self.fields = self.es_query['_source']
         if len(self.fields) > 10:
-            raise InvalidCSVQueryException('More than 10 fields requested')
+            raise InvalidCSVQueryExceptionTooManyFields('More than 10 fields requested')
 
         self.data_format = assemble_data_format()
 
         multiple_fields = [field for field in self.fields if ES_LIST in self.data_format[field]['settings']]
 
         if len(multiple_fields) > 1:
-            raise InvalidCSVQueryException('More than 1 multiple field requested')
+            raise InvalidCSVQueryExceptionTooManyMultiples('More than 1 multiple field requested')
         if multiple_fields != []:
             self.multiple_field = multiple_fields[0]
         else:
@@ -313,7 +313,7 @@ class CSVQuery(Query):
             return
 
         if not self.validated:
-            self._validate()
+            self.validate()
 
         self._run_query()
         # Apply CSV-specific transformers
