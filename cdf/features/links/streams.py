@@ -619,6 +619,7 @@ class InlinksStreamDef(InlinksRawStreamDef):
         },
         "inlinks_internal.nb.nofollow.unique": {
             "verbose_name": "No. of NoFollow Internal Inlinks (From Distinct URLs)",
+            "group": GROUPS.inlinks_nofollow.name,
             "type": INT_TYPE,
             "settings": {
                 ES_DOC_VALUE,
