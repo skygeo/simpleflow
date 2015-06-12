@@ -146,13 +146,13 @@ make_top_domains_files = optional_activity(
     'links',
 )
 make_inlinks_percentiles_file = as_pypy_activity(make_inlinks_percentiles_file)
-compute_page_rank = optional_pypy_activity(page_rank, 'document', 'links')
+compute_page_rank = optional_pypy_activity(page_rank, 'page_rank', 'links')
 make_links_to_non_canonical_file = optional_pypy_activity(make_links_to_non_canonical_file,
-                                                          'document', 'links')
+                                                          'links_to_non_canonical', 'links')
 make_links_to_non_canonical_counter_file = optional_pypy_activity(
     make_links_to_non_canonical_counter_file,
-    'document', 'links')
-get_final_redirects = optional_pypy_activity(get_final_redirects, 'document', 'links')
+    'links_to_non_canonical', 'links')
+get_final_redirects = optional_pypy_activity(get_final_redirects, 'chains', 'links')
 
 from cdf.tasks.url_data import (
     generate_documents,
