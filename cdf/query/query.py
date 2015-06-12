@@ -1,7 +1,11 @@
 import copy
 
+from cdf.core.metadata.dataformat import assemble_data_format
+from cdf.metadata.url.url_metadata import ES_LIST
+from cdf.exceptions import InvalidCSVQueryExceptionTooManyFields, InvalidCSVQueryExceptionTooManyMultiples
 from cdf.metadata.url.es_backend_utils import ElasticSearchBackend
 from cdf.query.query_parsing import QueryParser
+from cdf.query.csv_result_transformer import transform_csv_result
 from cdf.query.result_transformer import transform_result, transform_aggregation_result
 from cdf.utils.dict import deep_dict
 from cdf.core.metadata.dataformat import generate_data_format
@@ -144,7 +148,9 @@ class Query(object):
         self._results = []
         self._aggs = []
         self.executed = False
+        self.validated = False
         self.backend = backend
+        self._es_query = None
 
         if es_handler is None:
             self.es_handler = EsHandler(
@@ -180,9 +186,21 @@ class Query(object):
 
     @property
     def es_query(self):
-        return self.parser.get_es_query(self.botify_query, self.crawl_id)
+        if not self._es_query:
+            self._es_query = self.parser.get_es_query(self.botify_query, self.crawl_id)
+        return self._es_query
+
+    def validate(self):
+        self.validated = True
+        return True
 
     def _run(self):
+        """Translates the query and calls `_run_query` to execute it"""
+        if self.executed:
+            return
+        self._run_query()
+
+    def _run_query(self):
         """Launch the process of a ES query
             - Translation of a botify format query to ES search API
             - Query execution
@@ -213,15 +231,10 @@ class Query(object):
             }
         ]
         """
-        if self.executed:
-            return
-
-        # Translation
-        es_query = self.es_query
 
         # Issue a ES search
         temp_results = self.es_handler.search(
-            body=es_query,
+            body=self.es_query,
             routing=self.crawl_id,
             size=self.limit,
             start=self.start,
@@ -236,7 +249,7 @@ class Query(object):
             return
 
         self._results = []
-        self.fields = es_query['_source']
+        self.fields = self.es_query['_source']
 
         # make a copy of the fields part
         # need to use `deep_dict` since ES gives a dict with flatten path
@@ -262,3 +275,46 @@ class Query(object):
 
         # Flip flag on execution success
         self.executed = True
+
+
+class CSVQuery(Query):
+    """
+    Query with CSV-ready results
+    Specific CSV validation (1 multiple field max., 10 fields max), and validation
+    (multiple field values flattened to multiple rows with 1 value per row, verbose names in column headers)
+    """
+
+    def validate(self):
+        """
+        Validate the CSV query
+        CSV queries can have 10 fields at most and only 1 "multiple field"
+        """
+        self.fields = self.es_query['_source']
+        if len(self.fields) > 10:
+            raise InvalidCSVQueryExceptionTooManyFields('More than 10 fields requested')
+
+        self.data_format = assemble_data_format()
+
+        multiple_fields = [field for field in self.fields if ES_LIST in self.data_format[field]['settings']]
+
+        if len(multiple_fields) > 1:
+            raise InvalidCSVQueryExceptionTooManyMultiples('More than 1 multiple field requested')
+        if multiple_fields != []:
+            self.multiple_field = multiple_fields[0]
+        else:
+            self.multiple_field = None
+        self.validated = True
+
+    def _run(self):
+        """
+        Do specific CSV validation, run the Query and do CSV specific transformation
+        """
+        if self.executed:
+            return
+
+        if not self.validated:
+            self.validate()
+
+        self._run_query()
+        # Apply CSV-specific transformers
+        transform_csv_result(self._results, self)

@@ -43,3 +43,15 @@ class ErrorRateLimitExceeded(Exception):
 
 class HostDoesNotExist(Exception):
     pass
+
+
+class InvalidCSVQueryException(Exception):
+    pass
+
+
+class InvalidCSVQueryExceptionTooManyFields(InvalidCSVQueryException):
+    pass
+
+
+class InvalidCSVQueryExceptionTooManyMultiples(InvalidCSVQueryException):
+    pass
