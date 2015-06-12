@@ -1,6 +1,7 @@
 import urlparse
 import os.path
 import time
+from urllib3.exceptions import HTTPError
 
 from cdf.log import logger
 
@@ -45,7 +46,7 @@ def download_sitemaps(input_url, output_directory, user_agent, metadata):
     output_file_path = get_output_file_path(input_url, output_directory)
     try:
         download_url(input_url, output_file_path, user_agent)
-    except DownloadError as e:
+    except (DownloadError, HTTPError) as e:
         logger.info("Download error: %s", str(e))
         metadata.add_error(
             Error(input_url, SiteMapType.UNKNOWN, e.__class__.__name__, str(e))
@@ -125,7 +126,7 @@ def download_sitemaps_from_sitemap_index(sitemap_index_document,
         try:
             download_url(url, file_path, user_agent)
             sitemap_document = instanciate_sitemap_document(file_path, url)
-        except (DownloadError, UnhandledFileType) as e:
+        except (DownloadError, UnhandledFileType, HTTPError) as e:
             logger.info("Skipping {}: {}".format(url, str(e)))
             if os.path.isfile(file_path):
                 os.remove(file_path)

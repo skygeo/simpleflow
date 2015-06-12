@@ -34,4 +34,4 @@ class TestDownloadUrl(unittest.TestCase):
                      user_agent=user_agent)
 
         request_mock.get.assert_called_once_with("http://foo/bar.html",
-                                                 headers={"User-Agent": "foo bar"})
+                                                 headers={"User-Agent": "foo bar"}, verify=False)
